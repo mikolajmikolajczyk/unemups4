@@ -43,9 +43,14 @@ fetch_file(){ # url dest [min_bytes] — writes to a temp, keeps existing file o
 
 fetch_all(){
   # --- AMD ISA manuals (archive.org; amd.com/docs.amd.com block scripted fetch) ---
-  log "AMD ISA manuals (Sea Islands = Liverpool/GCN2, Southern Islands = GFX6)"
+  # Sea/Southern Islands = PS4 Liverpool (GCN2/GFX6). RDNA2 = PS5 Oberon (GFX10.3).
+  log "AMD ISA manuals (Sea Islands = PS4/Liverpool/GCN2, Southern Islands = GFX6, RDNA2 = PS5/Oberon/GFX10.3)"
   fetch_file "https://web.archive.org/web/2id_/http://developer.amd.com/wordpress/media/2013/07/AMD_Sea_Islands_Instruction_Set_Architecture.pdf" amd/ci-isa.pdf 500000 || warn "grab amd/ci-isa.pdf manually (docs.amd.com) if archive is down"
   fetch_file "https://web.archive.org/web/2id_/http://developer.amd.com/wordpress/media/2012/12/AMD_Southern_Islands_Instruction_Set_Architecture.pdf" amd/si-isa.pdf 500000 || warn "grab amd/si-isa.pdf manually if archive is down"
+  # RDNA2 ISA ("RDNA 2" Instruction Set Architecture Reference Guide, Nov 2020, 291pp).
+  # docs.amd.com serves only an HTML viewer + gpuopen download 404s; the wayback raw
+  # snapshot of the retired developer.amd.com PDF is the reachable clean copy.
+  fetch_file "https://web.archive.org/web/20230214072857id_/https://developer.amd.com/wp-content/resources/RDNA2_Shader_ISA_November2020.pdf" amd/rdna2-isa.pdf 500000 || warn "grab amd/rdna2-isa.pdf manually (docs.amd.com 'RDNA2 shader ISA') if archive is down"
 
   # --- Linux kernel radeon/amdgpu register + PM4 headers (canonical AMD MMIO/PM4) ---
   log "Linux kernel AMD headers @ ${KERNEL_REF}"

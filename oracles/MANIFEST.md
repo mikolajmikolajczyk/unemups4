@@ -21,9 +21,11 @@ fpPS4 (code, headers, DeepWiki, design docs, URLs) are FORBIDDEN as source.
 |---|---|---|---|---|---|
 | `amd/ci-isa.pdf` | AMD Sea Islands Series Instruction Set Architecture (R1100_ISA.book) | 316 | `a62ed1c0c1fb3f3215ed6cf45218c70d4caf059398906f645d6a366a70abde98` | © AMD (cite-only) | **PS4 Liverpool ≈ GCN2/Sea Islands** — shader opcode semantics (#6), image descriptor T# (#5), buffer descriptor V# (#11) |
 | `amd/si-isa.pdf` | AMD Southern Islands Series Instruction Set Architecture | — | `f09c4c5327f1e845cc79197f4bfc45fe49fe94709895fe0abd2624055eafc99f` | © AMD (cite-only) | GFX6 baseline — cross-check opcode/descriptor when CI diverges |
+| `amd/rdna2-isa.pdf` | "RDNA 2" Instruction Set Architecture: Reference Guide (Nov 2020) | 291 | `22aec03f2706dba2e148ffde1f3a25d5cdd42c71a96f95240aeb48d995d44795` | © AMD (cite-only) | **PS5 Oberon ≈ RDNA2/GFX10.3** — wave32 shader opcode semantics, VOP/SOP/SMEM/VMEM encodings, RDNA image T#/sampler S#/buffer V# descriptor layouts (differ from GCN) |
 
-- Source: archive.org snapshot of `developer.amd.com/wordpress/media/.../AMD_{Sea,Southern}_Islands_Instruction_Set_Architecture*.pdf` (amd.com direct + docs.amd.com were blocked, http 000/301).
-- **CI is the primary** oracle (Liverpool). Cite SI only when it disambiguates a GFX6-level fact.
+- Source (GCN): archive.org snapshot of `developer.amd.com/wordpress/media/.../AMD_{Sea,Southern}_Islands_Instruction_Set_Architecture*.pdf` (amd.com direct + docs.amd.com were blocked, http 000/301).
+- Source (RDNA2): wayback raw snapshot (`20230214072857id_`) of the retired `developer.amd.com/wp-content/resources/RDNA2_Shader_ISA_November2020.pdf` — `docs.amd.com` serves only an HTML viewer (2.5 KB), the `gpuopen.com` download 404s.
+- **CI is the primary** oracle for PS4 (Liverpool); cite SI only when it disambiguates a GFX6-level fact. **RDNA2 is the primary** oracle for PS5 (Oberon) — GCN facts do NOT carry over: wavefront width (64→32/64), VOP3/DPP/SDWA encodings, and the descriptor word layouts all changed. Never derive a PS5 shader fact from the CI/SI PDF.
 
 ## AMD register + PM4 headers (Linux kernel — canonical MMIO reg offsets + PM4 PKT3 opcodes)
 
@@ -51,12 +53,25 @@ browser, not the git protocol) @ commit `42f591b906b7e8a966cc339f84d2671f423d48c
 | File | sha256 | Covers |
 |---|---|---|
 | `mesa/mesa/src/amd/common/sid.h` | `ab9a023178aa4ee5944e20cc5720fe82a5b4b07b026a89488f38eb713e011968` | PM4 PKT3 + IT_* (106 defs), SI regs (#8, #9) |
-| `mesa/mesa/src/amd/common/ac_surface.c` | `062351d2d2e5c6c2251e308be0fd952f94ed2ac9d0847f8ac345034a58bfa3d3` | **tiling / surface math (#7)** |
+| `mesa/mesa/src/amd/common/ac_surface.c` | `062351d2d2e5c6c2251e308be0fd952f94ed2ac9d0847f8ac345034a58bfa3d3` | **tiling / surface math (#7)** — GFX6 through GFX12, incl. **GFX10.3 (RDNA2) tiling + DCC** |
 | `mesa/mesa/src/amd/registers/gfx6.json` | `38b492cf4211615934372777c55381ba21e448d3f199ddf1394def62446ce1a1` | machine-readable GFX6 register layouts (#5, #9, #11) |
 | `mesa/mesa/src/amd/registers/gfx7.json` | (in tree) | GFX7/Liverpool register layouts |
 
-T#/V# descriptor *bit layouts*: authoritative source is CI-ISA PDF §Image/Buffer
-Resource; Mesa gfx6/7.json + `ac_*` code are the second witness where present.
+**PS5 / RDNA2 (GFX10.3) register + descriptor witnesses** — same pinned Mesa clone (`MESA_COMMIT`), just not previously listed:
+
+| File | sha256 | Covers |
+|---|---|---|
+| `mesa/mesa/src/amd/registers/gfx103.json` | (in tree, git-pinned) | **machine-readable RDNA2 (GFX10.3 = PS5 Oberon) register layouts** — CB/DB/SPI/PA/VGT/GE banks |
+| `mesa/mesa/src/amd/registers/gfx10.json` | (in tree, git-pinned) | GFX10 (RDNA1) register layouts — cross-witness where 10.3 inherits from 10 |
+| `mesa/mesa/src/amd/registers/gfx10-rsrc.json` | (in tree, git-pinned) | **RDNA image/buffer/sampler resource (T#/V#/S#) descriptor bit layouts** — machine-readable second witness to the RDNA2-ISA PDF |
+| `mesa/mesa/src/amd/registers/gfx11-rsrc.json` | (in tree, git-pinned) | RDNA3 descriptor layouts — forward cross-check only (PS5 is RDNA2) |
+| `mesa/mesa/src/amd/registers/pkt3.json` | (in tree, git-pinned) | PM4 PKT3 / IT_* opcode table (gen-stable; RDNA2 command stream) |
+| `mesa/mesa/src/amd/common/ac_shadowed_regs.c` | (in tree, git-pinned) | GFX10.3 register shadow list — enumerates the regs the RDNA2 GPU state-shadows |
+
+T#/V#/S# descriptor *bit layouts*: PS4 authoritative source is the **CI-ISA PDF** §Image/Buffer
+Resource (Mesa gfx6/7.json + `ac_*` are the second witness). PS5 authoritative source is the
+**RDNA2-ISA PDF** §resource descriptors (Mesa `gfx10-rsrc.json` is the machine-readable second
+witness). The two generations' layouts differ — do not cross-apply.
 
 ## OpenOrbis SDK (Sony-facing formats)
 
@@ -103,13 +118,31 @@ Loader/.sb/fetch mechanisms validate against these. Cite by title+path in the le
   emits the encoding bytes for a mnemonic (verified: `s_mov_b32 s0,s1 → [0x01,0x03,0x80,0xbe]`).
   Witness for #6/#9: assemble known mnemonics, compare encoding bytes to our decoder's
   expected. llvm-mc never saw shadPS4 → agreement proves we both track the hardware.
-- mcpu for Liverpool: **gfx700** (Sea Islands / CIK). gfx600 = Southern Islands cross-check.
+- mcpu for Liverpool (PS4): **gfx700** (Sea Islands / CIK). gfx600 = Southern Islands cross-check.
+- mcpu for Oberon (PS5): **gfx1030** (RDNA2 / Navi 2x). Unlike gfx600/gfx700, this build
+  supports **both directions** for RDNA2 — verified:
+  `v_add_f32 v0,v1,v2 --assemble → [0x01,0x05,0x00,0x06]` and the reverse `--disassemble`
+  round-trips. So RDNA2 has a full bidirectional encoding witness (stronger than the
+  assemble-only PS4 path); `gfx1010` = RDNA1 cross-check.
 
 ---
 
 ## TODO / gaps
 
 - [x] ~~Mesa `src/amd`~~ — DONE via `gitlab.freedesktop.org/mesa/mesa.git` (git clone works).
+- [x] ~~**PS5 / RDNA2 shader ISA**~~ — DONE: `amd/rdna2-isa.pdf` (291pp, © AMD cite-only) +
+      Mesa `gfx103.json` / `gfx10-rsrc.json` (RDNA2 regs + T#/V#/S#) + llvm-mc `gfx1030`
+      (bidirectional encoding witness). Covers PS5 Oberon GPU-ISA facts end to end.
+- [ ] **PS5 Sony-facing GPU API (AGC)** — the PS5 replaces GNM with **AGC**; there is **no**
+      clean public oracle equivalent to the OpenOrbis GnmDriver headers. This is the real
+      remaining PS5 gap. Until a clean source exists, AGC-level facts must come from the
+      **dumped PS5 guest binary** (RE the command-stream the title emits) cross-checked against
+      the RDNA2-ISA PDF + Mesa `pkt3.json` for the underlying PM4 — never from another emulator.
+- [x] ~~**PS5 SELF/PRX loader**~~ — DONE: the PS5 container/dynamic layout was RE'd from the
+      **retail PS5 dump** (ground-truth oracle), corroborated by the OpenOrbis OELF spec where
+      it carries over from PS4; the PS5 `ps5_names.txt` NID corpus feeds import resolution. The
+      dumped binary is the clean primary source — cite it by title+path in the ledger. No
+      external spec needed.
 - [ ] **Vulkan spec** — pin the version we target for the present path. Low priority (present
       path is untainted).
 - [ ] **CLRXdisasm** — not installed; would be a second GCN disasm witness. Optional (llvm-mc
