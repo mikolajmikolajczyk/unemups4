@@ -1,0 +1,36 @@
+---
+id: TASK-88
+title: >-
+  gcn: interpreter oracle hardening — never-panic bounds, num_records, FMA-fuse,
+  VINTRP contract, offen
+status: Done
+assignee: []
+created_date: '2026-07-12 11:30'
+updated_date: '2026-07-12 11:42'
+labels:
+  - gpu
+  - gcn
+dependencies: []
+priority: high
+ordinal: 87000
+---
+
+## Description
+
+<!-- SECTION:DESCRIPTION:BEGIN -->
+Code-review round-6 of task-39 (wave64 interpreter = differential oracle). Finder D CONFIRMED the float bit-semantics are correct (from_bits/to_bits, InlineInt-NaN matches hw, median3 right) and the exercised VS/PS path is solid (VS spot-check passed). These fixes harden UNEXERCISED/robustness paths + make the oracle a trustworthy diff target before task-40 (recompiler) + task-41 (diff harness) build on it. Everything is in crates/gcn (interp.rs primarily). ITEMS: #1 HIGH (interp.rs ~595,624,672 — SMRD offset-SGPR, read_sgpr_u64 base+1, MUBUF srsrc) the interp indexes sgprs[104] with UNCHECKED register-number fields (8-bit offset 0..255; sbase 6-bit*2 up to 126; srsrc up to 124) so a malformed/adversarial instruction PANICS with index-out-of-bounds — this VIOLATES AC#4 (oracle never panics; the existing never-panic test only covers unknown-opcode). Bounds-check EVERY sgpr AND vgpr array access (register number vs NUM_SGPRS/NUM_VGPRS) and return a structured InterpError (InvalidOperand) instead of panicking; add a test feeding an instruction with an out-of-range register field asserting InterpError not panic. #5 (interp.rs V#-fetch) the 128-bit V# only reads base(word0)+stride(word1); num_records (word2) is ignored so a vertex index >= num_records reads PAST the declared buffer (VMM-bounded but wrong value); hardware clamps/faults. Read num_records and clamp-or-fault an out-of-range index (match what task-40's recompiler will do — document the choice so task-41's diff agrees). #3 (interp.rs exec_mubuf, ~699) idxen+offen both set reads the SAME vaddr VGPR for index AND byte-offset (6 finders flagged) — GCN uses vaddr for index and vaddr+1 for the byte offset; the corpus never sets offen. Either implement it correctly (vaddr+1) or return InterpError for the unsupported combo (do NOT silently double-count). #2 (interp.rs ~534 V_FMA_F32) is modeled as a*b+c (two roundings) not fused — for task-41 the SPIR-V FMA fuses (single rounding) → low-bit divergence and the oracle would bless a wrong-rounded recompiler. Use a.mul_add(b,c) for v_fma_f32 (keep v_mad_f32 as a*b+c, which is correct — mad is unfused on GCN). #4 VINTRP model (the task-40 CONTRACT — must be clear + correct): (a) the module doc mislabels it perspective-correct, but GCN VINTRP is SCREEN-SPACE LINEAR (no perspective divide — that happens elsewhere); fix the doc so a task-40 implementor does not add a perspective divide and cause false task-41 failures; (b) m0 is tracked in WaveState but NEVER read in exec_vintrp (real GCN: m0 = LDS param-cache base selecting the attribute set; corpus does s_mov m0,s0 with attr0) — either honor m0 or DOCUMENT explicitly that m0-based attribute selection is a deliberate simplification (attr comes from the VINTRP field) so task-40 mirrors the same simplification; (c) the interp-PS lane1 test reuses the SAME plane formula as exec_vintrp (self-referential — a systematic VINTRP bug passes) — add an INDEPENDENTLY hand-computed expected color for a non-trivial (I,J) so the oracle's hardest op has a real check. #6 (interp.rs exec_vop1/exec_one) the unsupported-op check happens INSIDE the 64-lane loop so some lanes are written before the error returns — hoist the op-support check before the lane loop (clean failure). CLEANUP (opportunistic, same crate): update WaveState::pc as instructions execute or document it is intentionally unused; strip the task-39/40 reference from decode.rs:328 comment (conventions.md:20); export NUM_SGPRS + NUM_VGPRS from lib.rs so task-40/41 can range-validate; a shared read_le_u32 + decode_v_sharps(base,stride) helper (SMRD+MUBUF); avoid the per-lane load() Vec<u8> alloc in exec_mubuf (stack buffer). Also add a LaunchAbi note that instanced-draw v1=instance_id is not yet modeled (a 4th shader reading v1 would get 0, not an error). Keep ps4-gcn Vulkan-free, ps4-core-only plus tracing+thiserror. No task-NN refs in new comments.
+<!-- SECTION:DESCRIPTION:END -->
+
+## Acceptance Criteria
+<!-- AC:BEGIN -->
+- [ ] #1 every sgpr AND vgpr array access is bounds-checked against the register number; an instruction with an out-of-range register field returns InterpError, does NOT panic (regression test); AC#4 never-panic now covers malformed operands not just unknown opcodes
+- [ ] #2 V# num_records is read and an out-of-range vertex index is clamped-or-faulted (documented choice); v_fma_f32 uses a.mul_add (fused); idxen+offen is either correct (vaddr+1) or a structured InterpError (no silent double-count)
+- [ ] #3 VINTRP doc corrected (screen-space linear, not perspective-correct); m0 is honored OR its omission is explicitly documented as the task-40 contract; an independently hand-computed VINTRP expected value tests a non-trivial (I,J) lane
+- [ ] #4 unsupported-op check is before the lane loop (no partial wave-state on error); NUM_SGPRS/NUM_VGPRS exported; decode.rs task ref stripped; build/test/clippy/fmt green; ps4-gcn Vulkan-free
+<!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+DONE 2026-07-12 (fix/task-88 @ c704126, merged). #1 never-panic: checked accessors sgpr/set_sgpr/vgpr/set_vgpr on Interp, EVERY register access routed through them (read_scalar/read_src_lane/write_vgpr/write_sgpr/SMRD offset-SGPR+dst-tail/read_sgpr_u64 base+1/MUBUF via decode_v_sharp); NEW InterpError::InvalidRegister{kind,reg,max,offset}; only raw indexes left = init_launch (internally-controlled, .take(NUM_SGPRS)+const vgprs[0]/[1]). Test out_of_range_register_field_yields_structured_error_not_panic (SMRD sbase=126→InvalidRegister). #5 num_records: CHOICE=CLAMP (index>records → num_records-1; 0 records → index 0); documented as task-40/41 contract. #3 idxen+offen: correct — byte offset reads vaddr+1 VGPR; non-VGPR vaddr under offen→InvalidOperand; no double-count. #2 v_fma_f32=a.mul_add(b,c) fused; v_mad_f32=a*b+c unfused (correct). #4 VINTRP: doc→'screen-space-linear, no perspective divide'; m0 DOCUMENTED deliberately-unread (attr from VINTRP attr/chan field, not m0 — task-40 must mirror); NEW interp_ps_matches_independently_computed_color (exact-f32 planes, I=J=0.5, expected [1.0,0.25,1.0,1.0] as literals not via plane formula). #6 partial-state: unsupported-op guard hoisted before 64-lane loop (vop1/2/3/vintrp). CLEANUP: NUM_SGPRS/NUM_VGPRS exported from lib.rs; read_le_u32 + decode_v_sharp→VSharp{base,stride,num_records} shared; WaveState::pc=offset_dwords per instr (advance-only, branch-free subset); LaunchAbi::Vertex note v1=instance_id unmodeled (reads 0); task ref stripped decode.rs:328. FLAG: stack-buffer NOT done (VMM::read_bytes returns Vec — originates in ps4-core trait, out of gcn scope). TASK-40 CONTRACT: num_records clamp-to-records-1; VINTRP screen-space-linear attr-from-field-not-m0; offen offset=vaddr+1; v_fma fused/v_mad unfused. Float semantics + exercised VS/PS goldens preserved. Combined gate: 31 suites, oracle 6/6.
+<!-- SECTION:NOTES:END -->

@@ -1,0 +1,50 @@
+[package]
+name = "ps4-gnm-scrape-host"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "PC-side receiver + decoder for the real-PS4 GNM command-buffer scraper (task-168)"
+
+# The receiver reads the framed TCP stream the GoldHEN plugin sends and saves
+# per-flip DCB/CCB dumps; the decode bin feeds a dumped DCB through the real
+# `ps4_gnm::pm4` decoder — the same analysis we ran on our own capture, now on
+# ground-truth hardware bytes. Path-depends on `ps4-gnm`, so this crate is a
+# member of the repo workspace (ps4-gnm uses workspace dep inheritance).
+[dependencies]
+ps4-gnm = { path = "../../../crates/gnm" }
+
+[lib]
+name = "ps4_gnm_scrape"
+path = "src/lib.rs"
+
+[[bin]]
+name = "receiver"
+path = "src/bin/receiver.rs"
+
+[[bin]]
+name = "decode"
+path = "src/bin/decode.rs"
+
+# General human-readable PM4 disassembly of a captured DCB/CCB (opcode names +
+# SET_*_REG resolved to register names). The readable view of the console ground truth.
+[[bin]]
+name = "dcbdump"
+path = "src/bin/dcbdump.rs"
+
+[[bin]]
+name = "sig"
+path = "src/bin/sig.rs"
+
+[[bin]]
+name = "vref"
+path = "src/bin/vref.rs"
+
+[[bin]]
+name = "uvdump"
+path = "src/bin/uvdump.rs"
+
+# Console-vs-emulator per-draw frame differ (task-200). Grew out of the throwaway
+# `skydiff` written during the task-199 Celeste investigation.
+[[bin]]
+name = "framediff"
+path = "src/bin/framediff.rs"

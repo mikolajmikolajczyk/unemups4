@@ -1,0 +1,31 @@
+[package]
+name = "unemups4"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ps4-memory = { path = "../../crates/memory" }
+ps4-libs = { path = "../../crates/libs" }
+ps4-cpu = { path = "../../crates/cpu" }
+ps4-loader = { path = "../../crates/loader" }
+ps4-core = { path = "../../crates/core" }
+ps4-kernel = { path = "../../crates/kernel" }
+ps4-syscalls = { path = "../../crates/syscalls" }
+ps4-gnm = { path = "../../crates/gnm" }
+ps4-gpu = { path = "../../crates/gpu" }
+
+inventory.workspace = true
+libc.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+# Tracy live-profiling layer (task-14). Optional + off by default: the default build
+# gains no dependency and no overhead. Enabled with `--features profile-tracy`, it needs
+# a running Tracy GUI whose protocol version matches this crate (see the devShell's tracy
+# pin and backlog/docs/commands.md).
+tracing-tracy = { version = "0.11", optional = true }
+
+[features]
+default = []
+# Stream tracing spans to a live Tracy profiler GUI.
+profile-tracy = ["dep:tracing-tracy"]

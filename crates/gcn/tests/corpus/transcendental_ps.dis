@@ -1,0 +1,7 @@
+v_mov_b32 v0, 0x40200000
+v_floor_f32 v1, v0
+v_fract_f32 v2, v0
+v_mov_b32 v3, 4.0
+v_sqrt_f32 v3, v3
+exp mrt0, v1, v2, v3, v3 done vm
+s_endpgm

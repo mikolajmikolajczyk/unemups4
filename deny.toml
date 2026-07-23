@@ -1,0 +1,48 @@
+# cargo-deny configuration — GPU/kernel layer-boundary intent (task-132 AC#3).
+#
+# The authoritative enforcement of the two forbidden dependency edges is
+# `scripts/check-layer-bans.sh` (run as a pre-commit hook / in CI): cargo-deny's `bans`
+# section can ban a crate globally but cannot express a *per-parent* edge ban
+# ("ps4-kernel must not depend on ps4-gpu" without banning ps4-gpu for the whole graph,
+# which is wrong — the app legitimately depends on it). This file documents the same intent
+# and keeps `cargo deny check` green for anyone who runs it (cargo-deny is in the devShell).
+#
+# The rules the graph must uphold (see backlog/docs/architecture.md "GPU layering"):
+#   * ps4-gnm  must NOT depend on `ash`   (gnm is the Vulkan-free draw layer)
+#   * ps4-kernel must NOT depend on ps4-gpu (kernel reaches present via ps4-core seams)
+
+[graph]
+all-features = true
+
+[bans]
+multiple-versions = "allow"
+wildcards = "allow"
+
+# No global crate bans here: `ash` is legitimately used by ps4-gpu, so it cannot be banned
+# process-wide. The per-parent edge rules are enforced by scripts/check-layer-bans.sh.
+
+[advisories]
+# Layer hygiene only — advisory/vuln scanning is out of scope for this config.
+version = 2
+ignore = []
+
+[licenses]
+version = 2
+# The workspace is GPL-3.0; do not fail the layer check on license classification here.
+allow = [
+  "GPL-3.0",
+  "MIT",
+  "Apache-2.0",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "ISC",
+  "Zlib",
+  "Unicode-3.0",
+  "MPL-2.0",
+  "CC0-1.0",
+]
+confidence-threshold = 0.8
+
+[sources]
+unknown-registry = "allow"
+unknown-git = "allow"

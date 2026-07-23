@@ -1,0 +1,17 @@
+[package]
+name = "ps4-core"
+version = "0.1.0"
+edition = "2024"
+
+[features]
+# Exposes test-only hooks on `registered::Registered` (the RAII `override_scoped` /
+# `override_none_scoped` guard, plus `reset`) so a downstream crate's tests can swap
+# process-global singletons and have the prior value restored on drop (panic-safe). Off by
+# default; enabled by dependents in their dev builds only.
+test-hooks = []
+
+[dependencies]
+bitflags.workspace = true
+libc.workspace = true
+thiserror.workspace = true
+tracing.workspace = true

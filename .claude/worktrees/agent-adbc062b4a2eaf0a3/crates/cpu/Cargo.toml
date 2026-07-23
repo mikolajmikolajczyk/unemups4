@@ -1,0 +1,11 @@
+[package]
+name = "ps4-cpu"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+libc.workspace = true
+ps4-core = { path = "../core" }
+tracing.workspace = true
+x86jit-core.workspace = true
+x86jit-cranelift.workspace = true

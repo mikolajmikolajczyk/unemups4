@@ -1,0 +1,23 @@
+# task-138 IdentityMem LOCKDOWN — enforce the single audited guest-memory seam.
+#
+# Guest writes must route through the SMC-tracked write seam
+# (`ps4_core::write_guest` / `GuestPtr::write`); a raw store is invisible to the JIT's
+# self-modifying-code tracking. `core::ptr::write_bytes` is the free-function raw store
+# idiom that bypasses it. The one legitimate use is the memory manager's own backend
+# (`crates/core/src/memory.rs::zero_memory`, which IS the seam), allow-listed at that
+# call site with `#[allow(clippy::disallowed_methods)]`.
+#
+# NOTE: `std::ffi::CStr::from_ptr` (raw guest deref → over-read/SIGSEGV) is deliberately
+# NOT banned here: its only in-repo raw uses are legitimate Vulkan FFI extension-name
+# reads in `crates/gpu/src/vulkan.rs` (host-owned strings, not guest pointers), and
+# clippy `disallowed_methods` cannot be scoped per-crate. Banning it would break that
+# uneditable crate, so the rule is dropped. Guest C-string reads already route through
+# `ps4_core::guest_ptr::read_cstr` (bounded VMA scan).
+#
+# LIMITATION: the bare-store idiom (`*ptr = val`) cannot be expressed as a
+# `disallowed_methods` entry — it is a raw deref-assignment, not a method call. That
+# class is covered instead by the `pub(crate)` demotion of `IdentityMem` plus the
+# `GuestPtr::write` migration of the remaining sites.
+disallowed-methods = [
+  { path = "std::ptr::write_bytes", reason = "raw guest store bypasses the SMC-tracked write_guest seam; route guest writes through ps4_core::write_guest / GuestPtr::write" },
+]

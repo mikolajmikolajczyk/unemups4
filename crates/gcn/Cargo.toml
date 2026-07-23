@@ -1,0 +1,22 @@
+[package]
+name = "ps4-gcn"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ps4-core = { path = "../core" }
+# Env-gated decode trace (doc-2 §1). Vulkan-free — tracing is pure.
+tracing.workspace = true
+# Structured interpreter errors (the oracle never panics).
+thiserror.workspace = true
+rspirv = "0.13.0"
+# IEEE f16 (round-to-nearest-even) for v_cvt_pkrtz_f16_f32 and compr-export
+# pack/unpack. The recompiler lowers the same ops with GLSL PackHalf2x16/
+# UnpackHalf2x16 (also RNE), so the oracle and the recompiled module agree.
+half = "2"
+
+[dev-dependencies]
+# SPIR-V enum/type defs (the `Capability` enum), so the portable-capability test
+# parses the assembled module via a real SPIR-V parser instead of hand-scanning
+# raw words. Pure def crate — Vulkan-free; already in the tree via rspirv.
+spirv = "0.4.0"

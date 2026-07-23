@@ -1,0 +1,16 @@
+[package]
+name = "ps4-memory"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ps4-core = { path = "../core" }
+ps4-cpu = { path = "../cpu" }
+libc.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+# Test-only: the parse_sb fault-safety regression test drives the real VMA-aware
+# read view through the `.sb` parser. A dev-dependency keeps ps4-gnm out of the
+# production dependency graph (ps4-memory does not depend on ps4-gnm at runtime).
+ps4-gnm = { path = "../gnm" }

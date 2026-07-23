@@ -1,0 +1,18 @@
+[package]
+name = "ps4-gcn"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ps4-core = { path = "../core" }
+# Env-gated decode trace (doc-4 §1). Vulkan-free — tracing is pure.
+tracing.workspace = true
+# Structured interpreter errors (the oracle never panics).
+thiserror.workspace = true
+rspirv = "0.13.0"
+
+[dev-dependencies]
+# SPIR-V enum/type defs (the `Capability` enum), so the portable-capability test
+# parses the assembled module via a real SPIR-V parser instead of hand-scanning
+# raw words. Pure def crate — Vulkan-free; already in the tree via rspirv.
+spirv = "0.4.0"

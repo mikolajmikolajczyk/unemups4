@@ -1,0 +1,16 @@
+[package]
+name = "ps4-kernel"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ps4-loader = { path = "../loader" }
+ps4-memory = { path = "../memory" }
+ps4-core= { path = "../core" }
+ps4-libs = { path = "../libs" }
+ps4-cpu = { path = "../cpu" }
+ps4-syscalls = { path = "../syscalls" }
+ps4-gpu = { path = "../gpu" }
+inventory.workspace = true
+libc.workspace = true
+tracing.workspace = true

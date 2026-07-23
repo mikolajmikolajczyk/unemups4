@@ -1,0 +1,7 @@
+# The oracle stash is reproduced locally by fetch-oracles.sh — the fetched content
+# (AMD PDFs [copyright], Mesa/OpenOrbis clones, kernel/FreeBSD headers) is NOT committed.
+# Only the reproducer and the manifest are tracked.
+*
+!.gitignore
+!fetch-oracles.sh
+!MANIFEST.md

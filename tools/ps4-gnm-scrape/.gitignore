@@ -1,0 +1,9 @@
+# Plugin build artifacts
+plugin/build/
+plugin/*.prx
+plugin/*.elf
+plugin/*.oelf
+
+# Captured command-buffer dumps (can be gigabytes)
+host/dumps/
+dumps/

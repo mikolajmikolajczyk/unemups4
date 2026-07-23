@@ -1,0 +1,10 @@
+v_mov_b32 v0, 0x3e800000
+v_sin_f32 v0, v0
+v_mov_b32 v1, 0xc0080000
+v_fract_f32 v1, |v1|, s0, s0 mul:4
+v_mov_b32 v2, 3
+v_mad_u32_u24 v2, v2, 2, 1
+v_cvt_f32_u32 v2, v2
+v_mov_b32 v3, 1.0
+exp mrt0, v0, v1, v2, v3 done vm
+s_endpgm

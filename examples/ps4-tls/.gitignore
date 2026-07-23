@@ -1,0 +1,4 @@
+eboot.bin
+*.pkg
+pkg.gp4
+x64/

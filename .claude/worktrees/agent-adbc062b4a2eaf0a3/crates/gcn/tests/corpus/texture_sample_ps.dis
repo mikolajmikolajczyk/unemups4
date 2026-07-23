@@ -1,0 +1,8 @@
+s_mov_b32 m0, s0
+v_interp_p1_f32 v2, v0, attr0.x
+v_interp_p2_f32 v2, v1, attr0.x
+v_interp_p1_f32 v3, v0, attr0.y
+v_interp_p2_f32 v3, v1, attr0.y
+image_sample v[4:7], v[2:3], s[0:7], s[8:11] dmask:0xf
+exp mrt0, v4, v5, v6, v7 done vm
+s_endpgm

@@ -1,0 +1,4 @@
+# The assembled raw-GCN code fixtures are committed corpus data (the .sb builder
+# and the header-integrity tests read them), so exempt them from the repo-root
+# `*.bin` ignore rule.
+!*.code.bin

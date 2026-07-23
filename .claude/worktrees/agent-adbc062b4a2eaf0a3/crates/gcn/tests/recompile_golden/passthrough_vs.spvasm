@@ -1,0 +1,94 @@
+               OpCapability Shader
+          %1 = OpExtInstImport "GLSL.std.450"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Vertex %11 "main" %gl_VertexIndex %gl_Position %69
+               OpDecorate %gl_VertexIndex BuiltIn VertexIndex
+               OpDecorate %_struct_16 Block
+               OpMemberDecorate %_struct_16 0 Offset 0
+               OpDecorate %_runtimearr_v4float ArrayStride 16
+               OpDecorate %_struct_30 Block
+               OpMemberDecorate %_struct_30 0 Offset 0
+               OpDecorate %32 DescriptorSet 0
+               OpDecorate %32 Binding 0
+               OpDecorate %gl_Position BuiltIn Position
+               OpDecorate %69 Location 0
+       %void = OpTypeVoid
+      %float = OpTypeFloat 32
+       %uint = OpTypeInt 32 0
+        %int = OpTypeInt 32 1
+       %bool = OpTypeBool
+    %v4float = OpTypeVector %float 4
+          %8 = OpTypeFunction %void
+%_ptr_Function_float = OpTypePointer Function %float
+%_ptr_Function_uint = OpTypePointer Function %uint
+%_ptr_Input_uint = OpTypePointer Input %uint
+%gl_VertexIndex = OpVariable %_ptr_Input_uint Input
+ %_struct_16 = OpTypeStruct %uint
+%_ptr_PushConstant__struct_16 = OpTypePointer PushConstant %_struct_16
+         %18 = OpVariable %_ptr_PushConstant__struct_16 PushConstant
+     %uint_0 = OpConstant %uint 0
+%_ptr_PushConstant_uint = OpTypePointer PushConstant %uint
+     %uint_1 = OpConstant %uint 1
+%_runtimearr_v4float = OpTypeRuntimeArray %v4float
+ %_struct_30 = OpTypeStruct %_runtimearr_v4float
+%_ptr_StorageBuffer__struct_30 = OpTypePointer StorageBuffer %_struct_30
+         %32 = OpVariable %_ptr_StorageBuffer__struct_30 StorageBuffer
+%_ptr_StorageBuffer_float = OpTypePointer StorageBuffer %float
+     %uint_2 = OpConstant %uint 2
+     %uint_3 = OpConstant %uint 3
+    %float_0 = OpConstant %float 0
+%_ptr_Output_v4float = OpTypePointer Output %v4float
+%gl_Position = OpVariable %_ptr_Output_v4float Output
+         %69 = OpVariable %_ptr_Output_v4float Output
+         %11 = OpFunction %void None %8
+         %12 = OpLabel
+         %36 = OpVariable %_ptr_Function_float Function
+         %37 = OpVariable %_ptr_Function_uint Function
+         %41 = OpVariable %_ptr_Function_float Function
+         %42 = OpVariable %_ptr_Function_uint Function
+         %47 = OpVariable %_ptr_Function_float Function
+         %48 = OpVariable %_ptr_Function_uint Function
+         %53 = OpVariable %_ptr_Function_float Function
+         %54 = OpVariable %_ptr_Function_uint Function
+         %15 = OpLoad %uint %gl_VertexIndex
+         %21 = OpAccessChain %_ptr_PushConstant_uint %18 %uint_0
+         %22 = OpLoad %uint %21
+         %24 = OpISub %uint %22 %uint_1
+         %25 = OpULessThan %bool %15 %22
+         %26 = OpSelect %uint %25 %15 %24
+         %27 = OpIEqual %bool %22 %uint_0
+         %28 = OpSelect %uint %27 %uint_0 %26
+         %34 = OpAccessChain %_ptr_StorageBuffer_float %32 %uint_0 %28 %uint_0
+         %35 = OpLoad %float %34
+               OpStore %36 %35
+         %38 = OpBitcast %uint %35
+               OpStore %37 %38
+         %39 = OpAccessChain %_ptr_StorageBuffer_float %32 %uint_0 %28 %uint_1
+         %40 = OpLoad %float %39
+               OpStore %41 %40
+         %43 = OpBitcast %uint %40
+               OpStore %42 %43
+         %45 = OpAccessChain %_ptr_StorageBuffer_float %32 %uint_0 %28 %uint_2
+         %46 = OpLoad %float %45
+               OpStore %47 %46
+         %49 = OpBitcast %uint %46
+               OpStore %48 %49
+         %51 = OpAccessChain %_ptr_StorageBuffer_float %32 %uint_0 %28 %uint_3
+         %52 = OpLoad %float %51
+               OpStore %53 %52
+         %55 = OpBitcast %uint %52
+               OpStore %54 %55
+         %56 = OpLoad %float %36
+         %57 = OpLoad %float %41
+         %58 = OpLoad %float %47
+         %59 = OpLoad %float %53
+         %61 = OpCompositeConstruct %v4float %56 %57 %58 %59
+               OpStore %gl_Position %61
+         %64 = OpLoad %float %36
+         %65 = OpLoad %float %41
+         %66 = OpLoad %float %47
+         %67 = OpLoad %float %53
+         %68 = OpCompositeConstruct %v4float %64 %65 %66 %67
+               OpStore %69 %68
+               OpReturn
+               OpFunctionEnd

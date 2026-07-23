@@ -1,0 +1,12 @@
+[package]
+name = "ps4-loader"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ps4-core = { path = "../core" }
+ps4-syscalls = { path = "../syscalls" }
+thiserror.workspace = true
+byteorder.workspace = true
+tracing.workspace = true
+goblin = "0.10.4"

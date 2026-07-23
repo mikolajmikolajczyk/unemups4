@@ -1,0 +1,15 @@
+# Build-speed config. The dominant cost is the final link of the unemups4 binary:
+# `profile.release` keeps `debug = true` (needed for named host frames in Tracy /
+# profiling and for gdb on the emulator), so the linker embeds and relocates a large
+# amount of debuginfo. Two levers cut that without losing the debuginfo:
+#
+#  * lld instead of the default bfd `ld` — far faster at linking a big object with
+#    debuginfo. mold would be faster still but is not installed; lld ships here.
+#  * split-debuginfo=unpacked — the debuginfo is written to companion files next to the
+#    binary instead of being linked into it, so the link stops paying to relocate it.
+#    gdb and the profiler still find it; only the embedding is skipped.
+#
+# ps4-cpu sits under half the tree (kernel -> libs -> app), so the first touch of it in a
+# session triggers a large downstream rebuild + this link — that is when the win shows.
+[target.x86_64-unknown-linux-gnu]
+rustflags = ["-C", "link-arg=-fuse-ld=lld", "-C", "split-debuginfo=unpacked"]

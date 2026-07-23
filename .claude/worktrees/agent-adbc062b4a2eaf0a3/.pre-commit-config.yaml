@@ -1,0 +1,55 @@
+# Pre-commit configuration.
+#
+# Generic hooks only — language/stack-specific hooks (eslint, tsc, ruff,
+# cargo, knip, madge, nixfmt, etc.) are added per-project after bootstrap.
+#
+# Activate the hook in your local clone with `pre-commit install`.
+
+default_install_hook_types: [pre-commit]
+default_stages: [pre-commit]
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: check-json
+      - id: check-added-large-files
+        args: ['--maxkb=2048']
+
+  - repo: local
+    hooks:
+      - id: markdownlint
+        name: markdownlint
+        language: system
+        entry: markdownlint
+        files: '\.md$'
+        exclude: '(^\.claude/skills/|^LICENSE)'
+        stages: [manual]
+
+      - id: shellcheck
+        name: shellcheck
+        language: system
+        entry: shellcheck
+        files: '\.(sh|bash)$'
+        stages: [manual]
+
+      - id: gitleaks
+        name: gitleaks
+        language: system
+        entry: gitleaks protect --staged --verbose
+        pass_filenames: false
+        stages: [manual]
+
+      # Active on every commit. Refuses to sign when user.email has no
+      # matching UID on the configured GPG signing key. Vendored so the
+      # repo is self-contained.
+      - id: gpg-uid-guard
+        name: gpg UID matches user.email
+        language: script
+        entry: scripts/uid-guard.sh
+        pass_filenames: false
+        always_run: true

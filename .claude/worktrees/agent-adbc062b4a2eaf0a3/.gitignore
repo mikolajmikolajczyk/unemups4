@@ -1,0 +1,61 @@
+# Rust
+/target/
+**/target/
+Cargo.lock.bak
+
+# OpenOrbis PS4 Toolchain, cloned by the user, not vendored (see README / build.rs)
+/data/oo_sdk/
+
+# Built homebrew artifacts (examples)
+*.pkg
+*.elf
+*.self
+*.bin
+eboot.bin
+
+# ...but keep the small prebuilt example ELFs so they run without a rebuild
+!examples/**/*.elf
+
+# Sony / proprietary material — never commit
+*.pup
+*.PUP
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
+*.swp
+
+# Dev dumps
+full_code.txt
+
+# --- agentic-project-template ---
+
+# Logs
+logs
+*.log
+
+# Editors
+!.vscode/extensions.json
+*.swo
+*.sw?
+*~
+
+# Local-only
+*.local
+.envrc.local
+
+# direnv cache (Nix flake users)
+.direnv/
+
+# Skills: .agents/skills/ is vendored (committed). .claude/skills/ holds symlinks into
+# it, generated on demand by scripts/skills-bootstrap.sh — not committed.
+.claude/skills/
+
+# Stack-specific: Rust build artifacts already ignored above (/target/, **/target/).
+
+# repoctx local index/cache — regenerated on demand, not committed.
+.repoctx/
+
+# Local test IWADs (Freedoom etc.) placed under the /app0 mount — runtime fixtures, not source
+game_data/**/*.wad

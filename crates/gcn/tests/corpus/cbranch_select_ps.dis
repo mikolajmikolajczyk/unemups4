@@ -1,0 +1,15 @@
+v_mov_b32 v0, 1.0
+v_mov_b32 v1, 2.0
+v_cmp_lt_f32 vcc, v0, v1
+s_cbranch_vccz 0x7
+v_mov_b32 v2, 0x3f400000
+v_mov_b32 v3, 0.5
+v_mov_b32 v4, 0x3e800000
+v_mov_b32 v5, 1.0
+s_branch 0x7
+v_mov_b32 v2, 0x3e000000
+v_mov_b32 v3, 0x3e000000
+v_mov_b32 v4, 0x3e000000
+v_mov_b32 v5, 1.0
+exp mrt0, v2, v3, v4, v5 done vm
+s_endpgm

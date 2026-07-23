@@ -1,0 +1,47 @@
+[workspace]
+resolver = "2"
+
+members = [
+    "app/unemups4",
+     "crates/*",
+]
+
+# Emit DWARF debug info in release so Linux perf/flamegraph/hotspot resolve
+# named host frames (rust_syscall_handler, x86jit_core::interp, cranelift
+# compile fns, the Vulkan present path). Debug info has no runtime cost — it
+# only grows the binary and link time. JIT'd guest code resolves as jit_0x...
+# symbols when X86JIT_PERF_MAP=1 (task-15). See backlog/docs/commands.md.
+[profile.release]
+debug = true
+
+[profile.dev.package.ps4-syscalls]
+debug = 0
+opt-level = 0
+
+# ps4-syscalls is ~472k lines of build.rs-generated code: a 94k-arm `nid()`
+# match plus three ~94k-row static lookup tables. All of it is cold (symbol
+# resolution at load, not a hot loop), so opt-level=3 buys no runtime speed but
+# costs enormous LLVM time. Drop optimization and maximize codegen parallelism
+# in release too. See TASK-19 (replace the `nid()` match with a sorted-slice
+# binary search) for the structural fix.
+[profile.release.package.ps4-syscalls]
+opt-level = 0
+codegen-units = 256
+
+[workspace.dependencies]
+# x86jit migration (backlog doc-1). Pinned to a commit of the local x86jit repo
+# (decision-2): builds see only the committed tree at `rev`, never the working
+# tree. Bump `rev` deliberately after a needed change merges in x86jit, then
+# `cargo update -p x86jit-core -p x86jit-cranelift`.
+x86jit-core = { git = "file:///home/mikolaj/src/x86jit", rev = "3a51293a57b8bdba89e68a64028f3bae73d710a2" }
+x86jit-cranelift = { git = "file:///home/mikolaj/src/x86jit", rev = "3a51293a57b8bdba89e68a64028f3bae73d710a2" }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+thiserror = "2.0.17"
+byteorder = "1.4"
+libc = "0.2.178"
+bitflags = "2.10.0"
+inventory = "0.3"
+winit = "0.29.15"
+gilrs = "0.11.2"
+cpal = "0.18.1"

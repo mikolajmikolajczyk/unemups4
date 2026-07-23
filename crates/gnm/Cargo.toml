@@ -1,0 +1,20 @@
+[package]
+name = "ps4-gnm"
+version = "0.1.0"
+edition = "2024"
+
+# Vulkan-FREE by design (doc-2 §1): the command processor + GPU state model +
+# shader-source abstraction are pure logic, headless-testable in the devShell with
+# no GPU driver. Depends only on ps4-core (VirtualMemoryManager + GpuBackend) and
+# ps4-gcn (shader translation, phase 4). NEVER ash/winit/gpu-allocator.
+[dependencies]
+ps4-core = { path = "../core" }
+ps4-gcn = { path = "../gcn" }
+# For the env-gated PM4 trace log (doc-2 §3). Vulkan-free — tracing is pure.
+tracing.workspace = true
+
+[dev-dependencies]
+# Test-only reset hook (`bounded_read::clear_bounded_read`) so the executor's
+# bounded-parse regression can exercise the wired *and* the headless path in one
+# process. Feature is dev-only; it does not leak into the library build.
+ps4-core = { path = "../core", features = ["test-hooks"] }

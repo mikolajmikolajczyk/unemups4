@@ -1,0 +1,30 @@
+{
+	"name": "OpenOrbis PS4 Toolchain",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"args": {
+			// Możesz zmienić wersję tutaj, jeśli wyjdzie nowsza
+			"OO_TOOLCHAIN_VERSION": "0.5.3"
+		}
+	},
+	"remoteUser": "orbis",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-vscode.cpptools",
+				"twxs.cmake",
+				"vadimcn.vscode-lldb"
+			],
+			"settings": {
+				"terminal.integrated.defaultProfile.linux": "bash",
+				"C_Cpp.default.includePath": [
+					"${default}",
+					"/lib/OpenOrbisSDK/include"
+				],
+				"C_Cpp.default.compilerPath": "/usr/bin/clang-12",
+				"C_Cpp.default.cppStandard": "c++17",
+				"C_Cpp.default.intelliSenseMode": "linux-clang-x64"
+			}
+		}
+	}
+}

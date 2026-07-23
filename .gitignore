@@ -1,0 +1,93 @@
+# Rust
+/target/
+**/target/
+Cargo.lock.bak
+
+# OpenOrbis PS4 Toolchain, cloned by the user, not vendored (see README / build.rs)
+/data/oo_sdk/
+
+# GoldHEN Plugins SDK, cloned + built by the user for tools/ps4-gnm-scrape (task-168)
+/data/goldhen_sdk/
+
+# Built homebrew artifacts (examples)
+*.pkg
+*.elf
+*.self
+*.bin
+eboot.bin
+
+# ...but keep the small prebuilt example ELFs so they run without a rebuild
+!examples/**/*.elf
+
+# Sony / proprietary material — never commit
+*.pup
+*.PUP
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
+*.swp
+
+# Dev dumps
+full_code.txt
+
+# On-demand GPU state snapshots (task-185): F10/F9 write frame-NNNNN/ directories here
+# (override with UNEMUPS4_SNAPSHOT_DIR). Debugging artefacts of one session — never committed.
+# GPU state snapshots (task-185). NOT root-anchored on purpose: the dump root defaults
+# to a RELATIVE path, so running the emulator from a subdirectory drops the tree there
+# instead. An anchored pattern would leave those strays committable.
+gpu-snapshots/
+
+# Env-gated guest-module dumps (task-113.2): UNEMUPS4_DUMP_MODULES=<dir> writes each loaded
+# module's flat post-relocation image + .map sidecar for offline disassembly. The .bin images
+# are already covered by *.bin above, but the .map sidecars are not — ignore the whole default
+# dump dir. NOT root-anchored (the dir is a plain, possibly-relative path, like gpu-snapshots).
+module-dumps/
+
+# --- agentic-project-template ---
+
+# Logs
+logs
+*.log
+
+# Editors
+!.vscode/extensions.json
+*.swo
+*.sw?
+*~
+
+# Local-only
+*.local
+.envrc.local
+
+# direnv cache (Nix flake users)
+.direnv/
+
+# Skills: .agents/skills/ is vendored (committed). .claude/skills/ holds symlinks into
+# it, generated on demand by scripts/skills-bootstrap.sh — not committed.
+.claude/skills/
+
+# Stack-specific: Rust build artifacts already ignored above (/target/, **/target/).
+
+# repoctx local index/cache — regenerated on demand, not committed.
+.repoctx/
+
+# Local test IWADs (Freedoom etc.) placed under the /app0 mount — runtime fixtures, not source
+game_data/**/*.wad
+/data/celeste-real-dcb/
+
+# Real-PS4 GNM captures streamed by tools/ps4-gnm-scrape (task-168/198): the receiver's
+# default out-dir. Hundreds of MB of command buffers + referenced buffer content dumped
+# from a retail title — debugging artefacts derived from the game, never committed.
+# NOT root-anchored, like gpu-snapshots/: the out-dir is a plain (possibly relative) path,
+# so running the receiver from a subdirectory drops the tree there instead.
+dumps/
+
+# Local-only developer files. These are deliberately NOT part of the repo — they are either
+# throwaway probes, machine-specific, or contain paths to local retail assets. Ignored rather
+# than merely "remembered", so an accidental `git add -A` cannot pick them up. If one of these
+# ever becomes worth vendoring, delete its line here first.
+/scripts/renderdoc-capture.sh
+/crates/gcn/examples/dump_spirv.rs
+/crates/gcn/tests/celeste_scope.rs

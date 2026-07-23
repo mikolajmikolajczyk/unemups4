@@ -1,0 +1,5 @@
+s_mov_b32 vcc_hi, 8
+s_swappc_b64 s0, s0
+exp pos0, v4, v5, v6, v7 done
+exp param0, v4, v5, v6, v7
+s_endpgm

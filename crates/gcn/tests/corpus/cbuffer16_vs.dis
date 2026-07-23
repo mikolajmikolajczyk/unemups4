@@ -1,0 +1,10 @@
+s_mov_b32 vcc_hi, 1
+s_buffer_load_dwordx16 s[0:15], s[4:5], 0x0
+s_waitcnt lgkmcnt(0)
+v_mov_b32 v0, s0
+v_mov_b32 v1, s5
+v_mov_b32 v2, s10
+v_mov_b32 v3, s15
+exp pos0, v0, v1, v2, v3 done
+exp param0, v0, v1, v2, v3
+s_endpgm

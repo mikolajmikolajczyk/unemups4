@@ -1,0 +1,25 @@
+[package]
+name = "ps4-gpu"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+winit.workspace = true
+gilrs.workspace = true
+softbuffer = "0.4.1"
+raw-window-handle = "0.6.0"
+tracing.workspace = true
+crossbeam-channel = "0.5.11"
+ps4-core = { path = "../core" }
+ps4-gnm = { path = "../gnm" }
+# Shader translation: the differential-harness binary drives BOTH the CPU
+# interpreter oracle and the recompiled SPIR-V through this crate.
+ps4-gcn = { path = "../gcn" }
+rayon = "1.8"
+ash = "0.38"
+ash-window = "0.13"
+gpu-allocator = "0.28"
+# Assembles the tiny companion stages (pass-through FS / fullscreen VS) the
+# differential-harness binary pairs the recompiled shader with. Same version the
+# recompiler uses; portable `Shader`-capability-only output.
+rspirv = "0.13.0"
